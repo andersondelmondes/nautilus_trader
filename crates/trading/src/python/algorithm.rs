@@ -204,6 +204,11 @@ impl PyExecutionAlgorithm {
         inner.core.actor.config.log_commands = log_commands;
     }
 
+    /// Updates the runtime `use_hyphens_in_client_order_ids` setting.
+    pub fn set_use_hyphens_in_client_order_ids(&mut self, use_hyphens: Option<bool>) {
+        self.inner_mut().core.config.use_hyphens_in_client_order_ids = use_hyphens;
+    }
+
     /// Returns the execution algorithm ID.
     #[must_use]
     pub fn exec_algorithm_id(&self) -> ExecAlgorithmId {
@@ -1445,6 +1450,12 @@ impl PyExecutionAlgorithm {
             self.set_log_commands(log_commands);
         }
 
+        if let Ok(use_hyphens) = config.getattr("use_hyphens_in_client_order_ids")
+            && let Ok(use_hyphens) = use_hyphens.extract::<Option<bool>>()
+        {
+            self.set_use_hyphens_in_client_order_ids(use_hyphens);
+        }
+
         Ok(has_id)
     }
 
@@ -1484,6 +1495,7 @@ impl ExecutionAlgorithmConfig {
     #[new]
     #[pyo3(signature = (
         exec_algorithm_id=None,
+        use_hyphens_in_client_order_ids=None,
         log_events=true,
         log_commands=true,
         **_kwargs
@@ -1491,6 +1503,7 @@ impl ExecutionAlgorithmConfig {
     fn py_new(
         #[gen_stub(override_type(type_repr = "model.ExecAlgorithmId | str | None"))]
         exec_algorithm_id: Option<&Bound<'_, PyAny>>,
+        use_hyphens_in_client_order_ids: Option<bool>,
         log_events: bool,
         log_commands: bool,
         _kwargs: Option<&Bound<'_, PyDict>>,
@@ -1510,12 +1523,18 @@ impl ExecutionAlgorithmConfig {
             exec_algorithm_id,
             log_events,
             log_commands,
+            use_hyphens_in_client_order_ids,
         })
     }
 
     #[getter]
     fn exec_algorithm_id(&self) -> Option<ExecAlgorithmId> {
         self.exec_algorithm_id
+    }
+
+    #[getter]
+    fn use_hyphens_in_client_order_ids(&self) -> Option<bool> {
+        self.use_hyphens_in_client_order_ids
     }
 
     #[getter]
@@ -1596,6 +1615,7 @@ fn py_config_to_json(config: &Bound<'_, PyAny>) -> PyResult<HashMap<String, serd
         "actor_id",
         "log_events",
         "log_commands",
+        "use_hyphens_in_client_order_ids",
     ] {
         if let Ok(value) = config.getattr(field) {
             config_dict.set_item(field, value)?;

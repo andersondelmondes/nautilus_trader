@@ -127,7 +127,9 @@ The built-in TWAP algorithm submits the remaining primary order on the final int
 
 ## Spawned orders
 
-Each spawned order sets `exec_spawn_id` to the primary order's `client_order_id`. Its own `client_order_id`
+Each spawned order sets `exec_spawn_id` to the primary order's `client_order_id`.
+
+When hyphens are enabled (`use_hyphens_in_client_order_ids=True`), its own `client_order_id`
 follows this pattern:
 
 ```text
@@ -136,6 +138,13 @@ follows this pattern:
 
 For example, the first order spawned from `O-20230404-001-000` has the ID
 `O-20230404-001-000-E1`.
+
+When hyphens are disabled (`use_hyphens_in_client_order_ids=False`), each child gets a fresh
+32-character UUID without hyphens. This meets the client order ID requirements of venues such as
+OKX.
+
+When the setting is omitted or `None`, the algorithm uses hyphens if the primary order ID contains
+one.
 
 :::note
 The primary and spawned terminology distinguishes execution slicing from parent and child
